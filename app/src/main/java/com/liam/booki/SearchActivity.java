@@ -10,14 +10,10 @@ import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
-import android.widget.ImageView;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.common.api.CommonStatusCodes;
 import com.liam.booki.asynctask.FetchBook;
-
-import java.util.Objects;
 
 
 /**
@@ -26,31 +22,12 @@ import java.util.Objects;
 public class SearchActivity extends AppCompatActivity {
 
     private static final String TAG = SearchActivity.class.getSimpleName(); // Debug TAG
-    static final int REQUEST_IMAGE_CAPTURE = 1;
     private static final int RC_OCR_CAPTURE = 9003;
-
-    /**
-     * The result TextView of the book title
-     */
-    private TextView mSearchResult;
-
-    /**
-     * The result TextView of the book authors
-     */
-    private TextView mAuthorResult;
 
     /**
      * The field for the title query
      */
     private EditText mQueryTitle;
-
-    /**
-     * The result Image of the book cover
-     */
-    private ImageView mCoverBook;
-
-    private TextView statusMessage;
-    private TextView textValue;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,13 +35,15 @@ public class SearchActivity extends AppCompatActivity {
         setContentView(R.layout.activity_search);
 
         // Link the UI elements
-        mSearchResult = (TextView) findViewById(R.id.search_result_tv);
-        mAuthorResult = (TextView) findViewById(R.id.author_tv);
         mQueryTitle = (EditText) findViewById(R.id.search_title_et);
-        mCoverBook = (ImageView) findViewById(R.id.cover_iv);
 
     }
 
+    /**
+     * The onClick method for the take a picture button.
+     * Start the Ocr Capture Activity waiting for result.
+     * @param v The take a picture button
+     */
     public void SearchBookByPicture(View v) {
 
         // launch Ocr capture activity.
@@ -73,7 +52,6 @@ public class SearchActivity extends AppCompatActivity {
         intent.putExtra(OcrCaptureActivity.UseFlash,false);
 
         startActivityForResult(intent, RC_OCR_CAPTURE);
-
     }
 
     /**
@@ -106,7 +84,7 @@ public class SearchActivity extends AppCompatActivity {
                     String text = data.getStringExtra(OcrCaptureActivity.TextBlockObject);
                     Toast.makeText(getApplicationContext(),
                             getString(R.string.ocr_success),
-                            Toast.LENGTH_SHORT);
+                            Toast.LENGTH_SHORT).show();
                     mQueryTitle.setText(text);
                     SearchBook(text);
                     Log.d(TAG, "Text read: " + text);
@@ -117,7 +95,7 @@ public class SearchActivity extends AppCompatActivity {
                 Toast.makeText(getApplicationContext(),
                         String.format(getString(R.string.ocr_error),
                         CommonStatusCodes.getStatusCodeString(resultCode)),
-                        Toast.LENGTH_SHORT);
+                        Toast.LENGTH_SHORT).show();
             }
         }
         else {
@@ -149,20 +127,24 @@ public class SearchActivity extends AppCompatActivity {
 
         // If the network is active and the search field is not empty, start a FetchBook AsyncTask.
         if (networkInfo != null && networkInfo.isConnected() && queryString.length()!=0) {
-            new FetchBook(mSearchResult,mAuthorResult,mCoverBook).execute(queryString);
+            new FetchBook(this).execute(queryString);
         }
         // Otherwise update the TextView to tell the user there is no connection or no search term.
         else {
             if (queryString.length() == 0) {
-                mSearchResult.setText("No result");
+                Toast.makeText(getApplicationContext(),
+                        "Empty search...",
+                        Toast.LENGTH_SHORT).show();
             } else {
-                mSearchResult.setText("No network");
+                Toast.makeText(getApplicationContext(),
+                        "No network...",
+                        Toast.LENGTH_SHORT).show();
             }
         }
     }
 
     /**
-     * The onClick method for the search button.
+     * The method called when the Activity Result of the OCR activity is done.
      * Check if the text field is not empty and the network is active and then start a
      * FetchBook AsyncTask.
      * @param queryString the title of the book we are fetching
@@ -178,14 +160,18 @@ public class SearchActivity extends AppCompatActivity {
 
         // If the network is active and the search field is not empty, start a FetchBook AsyncTask.
         if (networkInfo != null && networkInfo.isConnected() && queryString.length()!=0) {
-            new FetchBook(mSearchResult,mAuthorResult,mCoverBook).execute(queryString);
+            new FetchBook(this).execute(queryString);
         }
         // Otherwise update the TextView to tell the user there is no connection or no search term.
         else {
             if (queryString.length() == 0) {
-                mSearchResult.setText("No result");
+                Toast.makeText(getApplicationContext(),
+                        "Empty search...",
+                        Toast.LENGTH_SHORT).show();
             } else {
-                mSearchResult.setText("No network");
+                Toast.makeText(getApplicationContext(),
+                        "No network...",
+                        Toast.LENGTH_SHORT).show();
             }
         }
     }

@@ -88,7 +88,7 @@ public class APIServiceUtils {
                 }
             }
 
-            // Log.i(TAG,bookJSONString);   // Debug of the json data
+            Log.i(TAG,bookJSONString);   // Debug of the json data
         }
         return bookJSONString;
     }

@@ -26,6 +26,8 @@
         </activity>
         <activity android:name=".OcrCaptureActivity">
         </activity>
+        <activity android:name=".BookListResultActivity">
+        </activity>
     </application>
 
 </manifest>

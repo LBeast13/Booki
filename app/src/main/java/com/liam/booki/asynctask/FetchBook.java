@@ -1,16 +1,19 @@
 package com.liam.booki.asynctask;
 
+import android.content.Context;
+import android.content.Intent;
 import android.os.AsyncTask;
+import android.os.Bundle;
+import android.widget.Toast;
 
-import android.util.Log;
-import android.widget.ImageView;
-import android.widget.TextView;
-
+import com.liam.booki.BookListResultActivity;
+import com.liam.booki.model.Book;
 import com.liam.booki.service.APIServiceUtils;
-import com.squareup.picasso.Picasso;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
+
+import java.util.ArrayList;
 
 /**
  * This is the AsyncTask for the book fetching.
@@ -19,27 +22,16 @@ import org.json.JSONObject;
 public class FetchBook extends AsyncTask<String, Void, String> {
 
     private static final String TAG = FetchBook.class.getSimpleName();  // Debug Tag
+    private static final String BOOKLIST_KEY = "BOOKLIST_KEY";  // The key for the intent data
+
+    private Context context;
 
     /**
-     * The TextView for the title
+     * FetchBook constructor
+     * @param context the context of the calling class.
      */
-    private TextView mTitleText;
-
-    /**
-     * The TextView for the author
-     */
-    private TextView mAuthorText;
-
-    /**
-     * The ImageView for the cover
-     */
-    private ImageView mCoverImage;
-
-
-    public FetchBook(TextView titleText, TextView authorText, ImageView coverImage) {
-        this.mTitleText = titleText;
-        this.mAuthorText = authorText;
-        this.mCoverImage = coverImage;
+    public FetchBook(Context context) {
+        this.context = context;
     }
 
     /**
@@ -73,11 +65,10 @@ public class FetchBook extends AsyncTask<String, Void, String> {
             String title = null;
             String authors = null;
             String cover = null;
+            ArrayList<Book> bookListRes = new ArrayList<>();
 
-            // Look for results in the items array, exiting when both the title and author
-            // are found or when all items have been checked.
-            // TODO : Get the list of all the books of the result (not only one)
-            while (i < itemsArray.length() || (authors == null && title == null)) {
+            // Look for results in the items array, exiting when all items have been checked.
+            while(i < itemsArray.length()){
                 // Get the current item information.
                 JSONObject book = itemsArray.getJSONObject(i);
                 JSONObject volumeInfo = book.getJSONObject("volumeInfo");
@@ -89,35 +80,34 @@ public class FetchBook extends AsyncTask<String, Void, String> {
                     authors = volumeInfo.getString("authors");
 
                     JSONObject coverImages = volumeInfo.getJSONObject("imageLinks");
-                    cover = coverImages.getString("thumbnail");
+                    cover = coverImages.getString("thumbnail").replace("http","https");
                 } catch (Exception e) {
                     e.printStackTrace();
+                    title = "Unknown";
+                    authors = "Unknown";
                 }
+
+                // Add the book to the book list
+                Book b = new Book(title, authors, cover);
+                bookListRes.add(b);
 
                 i++;    // Move to the next item.
             }
 
-            // If both are found, display the result.
-            if (title != null && authors != null) {
-                mTitleText.setText(title);
-                mAuthorText.setText(authors);
-
-                // We replace http with https to display the cover image
-                Picasso.get()
-                        .load(cover.replace("http","https"))
-                        .into(mCoverImage);
-
-                // Log.i(TAG,"The URL of the cover image : " + cover); // Debug for the image URL
-
-            } else {
-                // If none are found, update the UI to show failed results.
-                mTitleText.setText("No results");
-            }
+            // Start the book list activity
+            Intent toBookListIntent = new Intent(context, BookListResultActivity.class);
+            toBookListIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            Bundle b = new Bundle();
+            b.putParcelableArrayList(BOOKLIST_KEY, bookListRes);
+            toBookListIntent.putExtras(b); // Put the book list in the intent
+            context.startActivity(toBookListIntent);
 
         } catch (Exception e) {
             // If onPostExecute does not receive a proper JSON string,
             // update the UI to show failed results.
-            mTitleText.setText("Format Result error");
+            Toast.makeText(context,
+                    "Format Result error...",
+                    Toast.LENGTH_SHORT).show();
             e.printStackTrace();
         }
     }
