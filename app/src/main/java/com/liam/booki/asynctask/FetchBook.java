@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.Toast;
 
 import com.liam.booki.BookListResultActivity;
@@ -13,6 +14,7 @@ import com.liam.booki.service.APIServiceUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.text.ParseException;
 import java.util.ArrayList;
 
 /**
@@ -63,8 +65,18 @@ public class FetchBook extends AsyncTask<String, Void, String> {
             // Initialize iterator and results fields.
             int i = 0;
             String title = null;
+            String subtitle = null;
             String authors = null;
+            String publisher = null;
+            String publisherDate = null;
+            String description = null;
+            ArrayList<String> categories = new ArrayList<>();
+            String mainCategory = null;
+            int pageCount = 0;
             String cover = null;
+            double rating = 0;
+            int ratingsCount = 0;
+
             ArrayList<Book> bookListRes = new ArrayList<>();
 
             // Look for results in the items array, exiting when all items have been checked.
@@ -76,19 +88,62 @@ public class FetchBook extends AsyncTask<String, Void, String> {
                 // Try to get the author and title from the current item,
                 // catch if either field is empty and move on.
                 try {
-                    title = volumeInfo.getString("title");
-                    authors = volumeInfo.getString("authors");
 
-                    JSONObject coverImages = volumeInfo.getJSONObject("imageLinks");
-                    cover = coverImages.getString("thumbnail").replace("http","https");
+                    title = volumeInfo.has("title") ?
+                            volumeInfo.getString("title") : "Unknown title";
+                    subtitle = volumeInfo.has("subtitle") ?
+                            volumeInfo.getString("subtitle") : "Unknown subtitle";
+                    authors = volumeInfo.has("authors") ?
+                            volumeInfo.getString("authors") : "Unknown author";
+                    publisher = volumeInfo.has("publisher") ?
+                            volumeInfo.getString("publisher") : "Unknown publisher";
+                    publisherDate = volumeInfo.has("publisherDate") ?
+                            volumeInfo.getString("publisherDate") : "Unknown publisher date";
+                    description = volumeInfo.has("description") ?
+                            volumeInfo.getString("description") : "No description";
+                    mainCategory = volumeInfo.has("mainCategory") ?
+                            volumeInfo.getString("mainCategory") : "No main category";
+                    pageCount = volumeInfo.has("pageCount") ?
+                            volumeInfo.getInt("pageCount") : 0;
+                    rating = volumeInfo.has("averageRating") ?
+                            volumeInfo.getDouble("averageRating") : 0;
+                    ratingsCount = volumeInfo.has("ratingsCount") ?
+                            volumeInfo.getInt("ratingsCount") : 0;
+
+                    if(volumeInfo.has("categories")){
+                        JSONArray categoriesJSON = volumeInfo.getJSONArray("categories");
+                        for(int j=0; i<categoriesJSON.length(); i++){
+                            categories.add(categoriesJSON.get(j).toString());
+                        }
+                    }
+
+                    JSONObject coverImages = volumeInfo.has("imageLinks") ?
+                            volumeInfo.getJSONObject("imageLinks") : null;
+
+                    //Log.i(TAG, "Objet coverImages : " + coverImages);
+                    if(coverImages != null){
+                        if(coverImages.has("medium")){
+                            cover = coverImages.getString("medium").replace("http","https");
+                            //Log.i(TAG, "Image size : Medium");
+                        } else if(coverImages.has("small")){
+                            cover = coverImages.getString("small").replace("http","https");;
+                            //Log.i(TAG, "Image size : Small");
+                        } else if(coverImages.has("thumbnail")){
+                            cover = coverImages.getString("thumbnail").replace("http","https");;
+                            //Log.i(TAG, "Image size : Thumbnail");
+                        } else if(coverImages.has("smallThumbnail")){
+                            cover = coverImages.getString("smallThumbnail").replace("http","https");;
+                            //Log.i(TAG, "Image size : Small Thumbnail");
+                        }
+                    }
+
                 } catch (Exception e) {
                     e.printStackTrace();
-                    title = "Unknown";
-                    authors = "Unknown";
                 }
 
+                //Log.i(TAG, "Image URL : " + cover);
                 // Add the book to the book list
-                Book b = new Book(title, authors, cover);
+                Book b = new Book(title, subtitle, authors, publisher, publisherDate, description, categories, mainCategory, pageCount, cover, rating, ratingsCount);
                 bookListRes.add(b);
 
                 i++;    // Move to the next item.

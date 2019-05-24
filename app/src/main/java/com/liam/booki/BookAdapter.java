@@ -6,6 +6,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.RatingBar;
 import android.widget.TextView;
 
 import com.liam.booki.model.Book;
@@ -69,6 +70,8 @@ public class BookAdapter extends RecyclerView.Adapter<BookAdapter.MyViewHolder> 
         private ImageView cover;
         private TextView title;
         private TextView authors;
+        private TextView ratingsCount;
+        private RatingBar rating;
 
         private Book currentBook;
 
@@ -79,6 +82,8 @@ public class BookAdapter extends RecyclerView.Adapter<BookAdapter.MyViewHolder> 
             title = ((TextView) itemView.findViewById(R.id.title_tv));
             authors = ((TextView) itemView.findViewById(R.id.authors_tv));
             cover = (ImageView) itemView.findViewById(R.id.book_cover_iv);
+            ratingsCount = (TextView) itemView.findViewById(R.id.ratings_count_tv);
+            rating = (RatingBar) itemView.findViewById(R.id.ratingBar);
 
             /*itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -99,6 +104,8 @@ public class BookAdapter extends RecyclerView.Adapter<BookAdapter.MyViewHolder> 
             currentBook = book;
             title.setText(book.getTitle());
             authors.setText(book.getAuthors());
+            rating.setRating((float) book.getRating());
+            ratingsCount.setText(String.valueOf(book.getRatingsCount()));
 
             try{
                 Picasso.get()
