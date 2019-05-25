@@ -1,5 +1,7 @@
 package com.liam.booki;
 
+import android.content.Context;
+import android.content.Intent;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -67,6 +69,8 @@ public class BookAdapter extends RecyclerView.Adapter<BookAdapter.MyViewHolder> 
      */
     public static class MyViewHolder extends RecyclerView.ViewHolder {
 
+        private static final String KEY_DETAIL = "KEY_BOOK_DETAIL";
+
         private ImageView cover;
         private TextView title;
         private TextView authors;
@@ -85,15 +89,17 @@ public class BookAdapter extends RecyclerView.Adapter<BookAdapter.MyViewHolder> 
             ratingsCount = (TextView) itemView.findViewById(R.id.ratings_count_tv);
             rating = (RatingBar) itemView.findViewById(R.id.ratingBar);
 
-            /*itemView.setOnClickListener(new View.OnClickListener() {
+            itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    new AlertDialog.Builder(itemView.getContext())
-                            .setTitle(currentPair.first)
-                            .setMessage(currentPair.second)
-                            .show();
+
+                    Context context = view.getContext();
+                    Intent toDetailIntent = new Intent(context, BookDetailActivity.class);
+                    toDetailIntent.putExtra(KEY_DETAIL,currentBook);
+                    context.startActivity(toDetailIntent);
+
                 }
-            });*/
+            });
         }
 
         /**
